@@ -1,0 +1,27 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend learning",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev":"nodemon src/index.js"
+  },
+  "keywords": [
+    "javasvript",
+    "backend"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raheelhparekh/Backend.git"
+  },
+  "author": "Raheel Parekh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raheelhparekh/Backend/issues"
+  },
+  "homepage": "https://github.com/raheelhparekh/Backend#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
