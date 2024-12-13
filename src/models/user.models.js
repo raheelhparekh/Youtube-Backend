@@ -1,6 +1,8 @@
+//data modelling 
 import mongoose,{Schema} from "mongoose";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken"; // jwt is like a key , only those can open a lock who has the key
+import bcrypt from "bcrypt"; // hashing and comparing password
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const userSchema = new Schema(
     {
@@ -54,19 +56,33 @@ const userSchema = new Schema(
     }
 );
 
-//password encrypt karega
+// these are the hooks of mongoose aggregate functions which are used to perform some operations before or after the operation
+// syntax goes schemaName.hookName("operation", async function(next){})
+// next bcoz middleware he so it will then go to the next middleware
+
+
+// "PRE" hook is for data database save hone se pehle uspe kuch operation karna chahte ho toh. For example password ko hash karna he fhir store karna he
 userSchema.pre("save", async function(next){
+
+    // password field ko lo and encrpyt kar do
+
     if(!this.isModified("password")){
         next();
     }
-    this.password= await bcrypt.hash(this.password, 10);
+    this.password= await bcrypt.hash(this.password, 10); // 10 is rounds of hashing
     next();
 });
 
+
+// similarly like middlewares in mongoose, we can also create CUSTOM METHODS in mongoose
+
+
+// checking password is correct or not
 userSchema.methods.isPasswordCorrect= async function(password){
     return await bcrypt.compare(password, this.password);
 }
 
+// another method to generate access token for the user
 userSchema.methods.generateAccessToken= async function(){
     return jwt.sign(
         {
@@ -82,6 +98,7 @@ userSchema.methods.generateAccessToken= async function(){
     )   
 }
 
+// another method to generate refresh token for the user
 userSchema.methods.generateRefreshToken= async function(){
     return jwt.sign(
         {
@@ -94,5 +111,8 @@ userSchema.methods.generateRefreshToken= async function(){
     )
     
 }
+
+// PLUGIN hook is for adding some plugins to the schema
 userSchema.plugin(mongooseAggregatePaginate);
+
 export const User= mongoose.model("User", userSchema);

@@ -1,4 +1,8 @@
+// npm api error class --> google documentation
+// this is basicaly ki agar code me error ata he toh error ese hi handle hoga
+
 class ApiError extends Error {
+    // syntax -> constructor(){}
     constructor(
         statusCode,
         message= "Something went wrong",
