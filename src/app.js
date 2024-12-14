@@ -23,11 +23,12 @@ app.use(express.static('public')); // public folder pdf folders vagera ko static
 
 app.use(cookieParser()); // cookies access karna and cookies set karna ke liye
 
-//routes
-import userRouter from './routes/user.route.js';
+//routes import
+import userRouter from './routes/user.routes.js';
 
 
 
 //routes declaration
 app.use('/api/v1/users', userRouter);  // http://localhost:3000/api/v1/users/register
+
 export {app}
