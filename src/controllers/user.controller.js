@@ -19,7 +19,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
     
     // Step1: from req.body--> json, form data
     const {fullName,email,username,password}=req.body
-    console.log("email:",email)
+    // console.log(req.body)
     
 
     // Step2: Validate user details
@@ -39,6 +39,9 @@ import { ApiResponse } from '../utils/ApiResponse.js';
     // from multer user.routes.js we are getting files from req.files
     // multer ne files li he user se aur apne server pe laya he for now
     // SYNTAX--> req.files?.filename[0]?.path
+
+    // console.log(req.files)
+
     const avatarLocalPath=req.files?.avatar[0]?.path
     const coverImageLocalPath=req.files?.coverImage[0]?.path
 
