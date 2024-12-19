@@ -100,6 +100,9 @@ const generateAccessAndRefreshToken = async (userId) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
+    // console.log("Refresh Token Generated", refreshToken);
+    // console.log("Acess Token Generated", accessToken);
+
     // refresh token save karna padega in database bcoz user model me refreshToken field he
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -189,34 +192,31 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // requires a self middleware to check if user is logged in or not--> we will create a middleware auth.middlewares.js
 
 const logoutUser = asyncHandler(async (req, res, next) => {
+  // req.user._id is coming from auth.middlewares.js and user milgaya bcoz of verifyJWT
+  // isse refresh token remove hoga from database
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $unset: {
+        refreshToken: 1, // this removes the field from document
+      },
+    },
+    {
+      new: true,
+    }
+  );
 
-    // req.user._id is coming from auth.middlewares.js and user milgaya bcoz of verifyJWT
-    // isse refresh token remove hoga from database
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set:{
-                refreshToken:undefined
-            }
-            
-        }
-    );
+  // cookies clear karne ke liye clearCookie() method use karenge
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
 
-    // cookies clear karne ke liye clearCookie() method use karenge
-    const options = {
-        httpOnly: true,
-        secure: true,
-    };
-
-    res.status(200)
+  res
+    .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(
-        200, 
-        {}, 
-        "User logged out successfully"
-    )
-    );
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-export { registerUser, loginUser , logoutUser};
+export { registerUser, loginUser, logoutUser };
