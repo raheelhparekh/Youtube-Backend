@@ -1,33 +1,37 @@
 import { Router } from "express";
-import {upload} from '../middlewares/multer.middlewares.js'
+import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import { registerUser, loginUser, logoutUser, refreshAccessToken } from "../controllers/user.controller.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+} from "../controllers/user.controller.js";
 
-
-const router=Router();
+const router = Router();
 
 // SYNTAX : router.route("/register").post(registerUser) --> this registerUser is from user.controller.js
 
 router.route("/register").post(
+  // this is a middleware which is coming from multer.middlewares.js
+  // isse we can now send images
+  upload.fields([
+    {
+      name: "avatar",
+      maxCount: 1,
+    },
+    {
+      name: "coverImage",
+      maxCount: 1,
+    },
+  ]),
+  registerUser
+);
 
-    // this is a middleware which is coming from multer.middlewares.js
-    // isse we can now send images
-    upload.fields([
-        {
-            name:"avatar",
-            maxCount:1
-        },
-        {
-            name:"coverImage",
-            maxCount:1
-        }
-    ]),
-    registerUser)
-
-router.route("/login").post(loginUser)
+router.route("/login").post(loginUser);
 
 // secured routes via auth.middlewares.js
-router.route("/logout").post(verifyJWT, logoutUser)
-router.route("/refresh-token").post(refreshAccessToken)
+router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/refresh-token").post(refreshAccessToken);
 
 export default router;

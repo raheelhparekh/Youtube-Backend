@@ -11,7 +11,9 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     // Step 1: get token access from cookies
     // Step 2: get token access from headers bcoz mobile app will send token in headers not in cookies so we need to check both . Bearer go on google and search what is Bearer token JWT
-    const token =req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "");
 
     // console.log("Generated Token", token);
 
@@ -20,7 +22,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
 
     // Step 3: verify the token
-    const decodedToken =jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const user = await User.findById(decodedToken?._id).select(
       "-password -refreshToken"
     ); // _id bcoz we have saved _id in token while genrating token in user.models.js

@@ -2,24 +2,20 @@
 // and will catch the errors and pass them to the error handling middleware
 // makes the code more readable and clean
 
-
 // using PROMISES
 const asyncHandler = (requestHandler) => {
-    return (req, res, next) => {
-        Promise.resolve(requestHandler(req, res, next))
-        .catch((err) => next(err))
-    }
-}
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+  };
+};
 
-export { asyncHandler }
-
+export { asyncHandler };
 
 // using TRY CATCH block
 
 // const asyncHandler = () => {}
 // const asyncHandler = (func) => () => {}
 // const asyncHandler = (func) => async () => {}
-
 
 // const asyncHandler = (requestHandler) => async (req, res, next) => {
 //     try {
