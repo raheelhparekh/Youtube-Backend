@@ -331,14 +331,14 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
     },
     { new: true }
   ).select("-password -refreshToken");
-  
+
   //return response
   res
     .status(200)
     .json(new ApiResponse(200, user, "User details updated successfully"));
 });
 
-// to update user avatar image 
+// to update user avatar image
 const updateUserAvatar = asyncHandler(async (req, res, next) => {
   // Step 1: get avatar from req.file
   const avatarLocalPath = req.file?.avatar[0]?.path;
@@ -398,6 +398,89 @@ const updateUserCoverImage = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, user, "coverImage updated successfully"));
 });
 
+// Aggregate Pipelines in MongoDB to find Subscribers and subscribed to
+const getUserChannelProfile = asyncHandler(async (req, res, next) => {
+  const { username } = req.params; // params bcoz we are getting username from url /:username
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "Please provide username");
+  }
+
+  // User.aggregate([{},{},{}] --> returns an array of objects with {} includes pipeline stages which u want to perform
+  const channel = await User.aggregate([
+    {
+      // $match pipeline to match username
+      $match: {
+        username: username?.toLowerCase(),
+      },
+    },
+    {
+      // $lookup has 4 fields from, localField, foreignField, as
+      // kitne subscribers he us channel ke
+      $lookup: {
+        from: "subscriptions", // from which model we want to get data
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      // mene kitne channels ko subscribe kiya he
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      // $addFields is a pipeline to add new fields in the database
+      // $size is a method to get the length of the array --> counting
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        subscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        // $in is a method to check if user is subscribed or not basically the button will be subscribe or unsubscribe
+        isSubscribed: {
+          $cond: {
+            if: {
+              $in: [req.user?._id, "$subscribers.subscriber"],
+            },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      // $project means what fields we want to show
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribedToCount: 1,
+        subscribersCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+      },
+    },
+  ]);
+  // console.log(channel)
+
+  if (!channel?.length) {
+    throw new ApiError(404, "Channel not found");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, channel[0], "User Channel Fetched Successfully")
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -407,5 +490,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getUserChannelProfile,
 };
