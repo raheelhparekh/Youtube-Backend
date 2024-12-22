@@ -4,6 +4,7 @@ import { User } from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // method to generate access token and refresh token
 const generateAccessAndRefreshToken = async (userId) => {
@@ -399,7 +400,7 @@ const updateUserCoverImage = asyncHandler(async (req, res, next) => {
 // Aggregate Pipelines in MongoDB to find Subscribers and subscribed to
 const getUserChannelProfile = asyncHandler(async (req, res, next) => {
   const { username } = req.params; // params bcoz we are getting username from url /:username
-
+  // console.log(username)
   if (!username?.trim()) {
     throw new ApiError(400, "Please provide username");
   }
@@ -466,7 +467,7 @@ const getUserChannelProfile = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
-  // console.log(channel)
+  console.log(channel)
 
   if (!channel?.length) {
     throw new ApiError(404, "Channel not found");
