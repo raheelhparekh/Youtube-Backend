@@ -5,6 +5,32 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
+// method to generate access token and refresh token
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    // user find karna padega to generate token
+    const user = await User.findById(userId);
+
+    //generateAccessToken $ generateRefreshToken are methods from user.models.js from JWT
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    // console.log("Refresh Token Generated", refreshToken);
+    // console.log("Acess Token Generated", accessToken);
+
+    // refresh token save karna padega in database bcoz user model me refreshToken field he
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (err) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating access and refresh tokens"
+    );
+  }
+};
+
 // ALGORITHM TO REGISTER USER
 // get user details from frontend
 // validate user details -- not empty, valid email, password length
@@ -15,7 +41,6 @@ import jwt from "jsonwebtoken";
 // remove password and refres token from response
 // check for user created or not
 // return response
-
 const registerUser = asyncHandler(async (req, res, next) => {
   // Step1: from req.body--> json, form data
   const { fullName, email, username, password } = req.body;
@@ -92,31 +117,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, createdUser, "User created successfully"));
 });
 
-const generateAccessAndRefreshToken = async (userId) => {
-  try {
-    // user find karna padega to generate token
-    const user = await User.findById(userId);
-
-    //generateAccessToken $ generateRefreshToken are methods from user.models.js from JWT
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    // console.log("Refresh Token Generated", refreshToken);
-    // console.log("Acess Token Generated", accessToken);
-
-    // refresh token save karna padega in database bcoz user model me refreshToken field he
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-  } catch (err) {
-    throw new ApiError(
-      500,
-      "Something went wrong while generating access and refresh tokens"
-    );
-  }
-};
-
 // ALGORITHM TO LOGIN USER
 // req.body se email,username and password lelo
 // check username and email are not empty and entered by user
@@ -125,7 +125,6 @@ const generateAccessAndRefreshToken = async (userId) => {
 // if correct then generate ACCESS TOKEN and REFRESH TOKEN
 // send these tokens in response via secured COOKIES
 // return response
-
 const loginUser = asyncHandler(async (req, res, next) => {
   // Step1: from req.body--> json, form data
   const { email, username, password } = req.body;
@@ -191,7 +190,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
 });
 
 // requires a self middleware to check if user is logged in or not--> we will create a middleware auth.middlewares.js
-
 const logoutUser = asyncHandler(async (req, res, next) => {
   // req.user._id is coming from auth.middlewares.js and user milgaya bcoz of verifyJWT
   // isse refresh token remove hoga from database
@@ -481,6 +479,67 @@ const getUserChannelProfile = asyncHandler(async (req, res, next) => {
     );
 });
 
+// mongo db aggregate pipeline for getting watch history of user
+// subpipeline to get owner details of video
+const getWatchHistory = asyncHandler(async (req, res) => {
+  // INTERVIE QUESTION: const user=req.user._id --> mongoose automatically converts string to object id but we are using aggregate so we need to convert it manually to object id
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      // nested pipeline to get video details first
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        // subpipeline to get owner details of video now
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              // subpipeline to get only required fields of owner now
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            // to get only first owner details bcoz we are getting array of owner details
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "Watch history fetched successfully"
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -492,4 +551,5 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
+  getWatchHistory,
 };
