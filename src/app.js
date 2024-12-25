@@ -26,8 +26,11 @@ app.use(cookieParser()); // cookies access karna and cookies set karna ke liye
 
 //routes import
 import userRouter from "./routes/user.routes.js";
+import tweetRouter from "./routes/tweet.routes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter); // http://localhost:3000/api/v1/users/register
+app.use("/api/v1/tweets", tweetRouter); // http://localhost:3000/api/v1/tweets
+
 
 export { app };
