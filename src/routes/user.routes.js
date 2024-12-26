@@ -22,6 +22,7 @@ const router = Router();
 router.route("/register").post(
   // this is a middleware which is coming from multer.middlewares.js
   // isse we can now send images
+  // upload.fields is used to upload multiple images at once
   upload.fields([
     {
       name: "avatar",
@@ -49,6 +50,7 @@ router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account-details").patch(verifyJWT, updateAccountDetails);
 
 // updating avatar and coverImage is a patch request because we are updating the existing data
+// upload.single is used to upload single image at once
 router
   .route("/update-avatar")
   .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);

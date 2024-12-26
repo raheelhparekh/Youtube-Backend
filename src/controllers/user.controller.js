@@ -45,7 +45,6 @@ const generateAccessAndRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res, next) => {
   // Step1: from req.body--> json, form data
   const { fullName, email, username, password } = req.body;
-  // console.log(req.body)
 
   // Step2: Validate user details
   if (
@@ -66,7 +65,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
   // from multer user.routes.js we are getting files from req.files
   // multer ne files li he user se aur apne server pe laya he for now
   // SYNTAX--> req.files?.filename[0]?.path
-
   // console.log(req.files)
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -162,11 +160,11 @@ const loginUser = asyncHandler(async (req, res, next) => {
   );
 
   // STEP 6 : send these tokens in response via secured COOKIES
-
   // but first we need to define what to send in response. we dont want to send password and refresh tokens
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
+  // console.log(loggedInUser)
 
   const options = {
     httpOnly: true,
@@ -467,7 +465,7 @@ const getUserChannelProfile = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
-  console.log(channel)
+  console.log(channel);
 
   if (!channel?.length) {
     throw new ApiError(404, "Channel not found");

@@ -54,11 +54,16 @@ const getUserTweets = asyncHandler(async (req, res) => {
         as: "userDetails",
       },
     },
-    { $unwind: "$userDetails" },
-    { $sort: { createdAt: -1 } },
+    { 
+      // $unwind deconstructs an array field from the input documents to output a document for each element
+      $unwind: "$userDetails" 
+    }, 
+    { 
+      $sort: { createdAt: -1 } 
+    },
     {
       $project: {
-        _id: 1,
+        _id: 1, // new ObjectId('') --> format
         content: 1,
         createdAt: 1,
         username: "$userDetails.username",
@@ -66,6 +71,8 @@ const getUserTweets = asyncHandler(async (req, res) => {
       },
     },
   ]);
+
+  console.log(userTweets);
 
   if (!userTweets.length) {
     throw new ApiError(404, "No tweets found for this user");
