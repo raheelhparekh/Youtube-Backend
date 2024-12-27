@@ -28,10 +28,12 @@ app.use(cookieParser()); // cookies access karna and cookies set karna ke liye
 import userRouter from "./routes/user.routes.js";
 import tweetRouter from "./routes/tweet.routes.js";
 import videoRouter from "./routes/video.routes.js";
+import commentRouter from "./routes/comment.routes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter); // http://localhost:3000/api/v1/users/register
 app.use("/api/v1/tweets", tweetRouter); // http://localhost:3000/api/v1/tweets
 app.use("/api/v1/videos", videoRouter) // http://localhost:3000/api/v1/videos
+app.use("/api/v1/comments", commentRouter)
 
 export { app };
